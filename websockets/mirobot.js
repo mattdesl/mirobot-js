@@ -1,148 +1,190 @@
-{
-  const DEFAULT_IP = 'local.mirobot.io';
+function mirobot (ip = 'local.mirobot.io') {
+  let receivers = {};
+  const randomHash = () => {
+    let hash;
+    do {
+      hash = Math.random().toString(36).substr(2, 10);
+    } while (hash in receivers);
+    return hash;
+  }
   const noop = () => {};
-  function mirobotAsync (ip = DEFAULT_IP) {
-    const defaultError = () => console.error('Error in socket');
-    const socket = new window.WebSocket(`ws://${ip}:8899/websocket`);
-    socket.onclose = () => {
-      console.log('[mirobot] Socket disconnected, you must now reload the page to reconnect.');
-    };
+  let closing = false;
+  let socket;
+  let processInterval;
+  let connected = false;
+  let queue = [];
+  let listeners = [];
+  let msgID = 0;
+  let idle = true;
+  connect();
 
-    const bot = {
-      send,
-      close: () => socket.close()
-    };
-
-    return new Promise((resolve, reject) => {
-      console.log('[mirobot] Connecting...');
-      socket.onerror = () => {
-        socket.onopen = noop;
-        socket.onerror = defaultError;
-        reject(new Error('Could not connect'));
-      };
-      socket.onopen = () => {
-        console.log('[mirobot] Connected');
-        socket.onopen = noop;
-        socket.onerror = defaultError;
-        resolve(bot);
-      };
-    });
-    
-    function receive (prevCommand) {
-      return new Promise((resolve, reject) => {
-        socket.onerror = () => handleError(reject);
-        socket.onmessage = ({ data }) => {
-          try {
-            const msg = JSON.parse(data);
-            if (msg.status === 'error') {
-              if (prevCommand && msg.msg.includes('not recognised')) {
-                console.warn('[mirobot]', msg.msg, `"${prevCommand}"`);
-              } else {
-                console.warn('[mirobot]', msg.msg);
-              }
-            }
-            socket.onmessage = noop;
-            socket.onerror = defaultError;
-            resolve(msg);
-          } catch (_) {
-            handleError(reject);
+  return {
+    collision (cb) {
+      let enabled = true;
+      setTimeout(() => {
+        this.collideState((result) => {
+          if (enabled && result.status === 'complete' && result.msg !== 'none') {
+            cb(result.msg);
           }
-        };
-      })
-    }
+        });
+      }, 0);
+      listeners.push(cb);
+      return () => {
+        const idx = listeners.indexOf(cb);
+        if (idx >= 0) listeners.splice(idx, 1);
+        enabled = false;
+      };
+    },
 
-    function handleError (reject) {
-      socket.onerror = defaultError;
-      socket.onmessage = noop;
-      reject(new Error('Error from Mirobot'));
-    }
+    enableCollisionListener (cb) {
+      return send('collideNotify', 'true', cb);
+    },
+    disableCollisionListener (cb) {
+      return send('collideNotify', 'false', cb);
+    },
 
-    async function send (command, argument) {
-      return new Promise(async (resolve, reject) => {
-        const opt = { cmd: command };
-        if (command === 'beep' && (!isFinite(argument) || argument < 2 || argument > 10000)) {
-          argument = 500;
-        }
-        if (argument != null) opt.arg = argument;
-        socket.send(JSON.stringify(opt));
-        let msg = await receive(command);
-        if (msg.status === 'accepted') {
-          console.log('[mirobot]', command, msg.status);
-          msg = await receive(command);
-          console.log('[mirobot]', command, msg.status);
-          resolve(msg);
-        } else {
-          resolve(msg);
-        }
-      });
+    collideState (cb) { return send('collideState', cb); },
+    stop (cb) { return send('stop', cb); },
+    forward (n = 100, cb) { return send('forward', n, cb); },
+    backward (n = 100, cb) { return send('backward', n, cb); },
+    left (deg = 90, cb) { return send('left', deg, cb); },
+    right (deg = 90, cb) { return send('right', deg, cb); },
+    penup (cb) { return send('penup', cb); },
+    pendown (cb) { return send('pendown', cb); },
+    version (cb) { return send('version', cb); },
+    ping (cb) { return send('ping', cb); },
+    pause (cb) { return send('pause', cb); },
+    resume (cb) { return send('resume', cb); },
+    beep (duration = 250, cb) { return send('beep', duration, cb); },
+
+    get idle () {
+      return idle;
+    },
+
+    reset () {
+      queue.length = 0;
+    },
+
+    send,
+    send_msg,
+
+    close () {
+      closing = true;
+      if (socket) socket.close();
+      if (processInterval != null) clearInterval(processInterval);
+      processInterval = null;
     }
   }
 
-  function mirobot (ip = DEFAULT_IP) {
-    let stack = [];
-    let closing = false;
-    let curBot;
-    let p = mirobotAsync(ip).then(bot => {
-      if (closing) {
-        bot.close();
-      } else {
-        curBot = bot;
-        next();
-      }
-    });
+  function log (...args) {
+    console.log(...args);
+  }
 
-    async function next () {
-      if (closing) return;
-      if (!curBot) {
-        console.error('[mirobot] No bot connected');
-        return;
-      }
-      if (stack.length > 0) {
-        const args = stack.shift();
-        await curBot.send(...args);
-        next();
-      }
+  function onConnect () {
+    connected = true;
+    log('[mirobot] Connected');
+  }
+
+  function onClose () {
+    connected = false;
+    if (!closing) {
+      log('[mirobot] Reconnecting...');
+      connect();
+    } else {
+      log('[mirobot] Connection closed. Reload the page to reconnect.');
     }
+    socket = null;
+    closing = false;
+  }
 
-    function send (...args) {
-      if (closing) return;
-      stack.push(args);
-      if (curBot) next();
-    }
+  function onMessage (ev) {
+    if (ev.data && typeof ev.data === 'string') {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.status === 'error') {
+          console.warn('[mirobot] Error:', msg.msg, msg);
+        }
+        
+        if (msg.id && msg.id in receivers) {
+          receivers[msg.id].callback(msg);
+          log('[mirobot] Receiving', receivers[msg.id].data.cmd, msg.status, `(${msg.id})`);
+          if (msg.status === 'complete' || msg.status === 'error') {
+            receivers[msg.id].finish(msg);
+            delete receivers[msg.id];
+          }
 
-    return {
-      // Familiar API as mirobot JS
-      forward (amount = 100) { send('forward', amount); },
-      back (amount = 100) { send('back', amount); },
-      left (degrees = 90) { send('left', degrees); },
-      right (degrees = 90) { send('right', degrees); },
-      penup () { send('penup'); },
-      pendown () { send('pendown'); },
-      beep (duration = 250) { send('beep', duration); },
-
-      // Raw send commands
-      send,
-
-      // Stop the bot immediately and kill command queue
-      stop () {
-        stack.length = 0;
-        stack.push([ 'stop' ]);
-        if (curBot) next();
-      },
-
-      // Stop the bot and close connection
-      close () {
-        closing = true;
-        stack.length = 0;
-        if (curBot) {
-          curBot.send('stop').then(() => {
-            curBot.close();
-            curBot = null;
+          if (msg.status === 'complete') {
+            idle = true;
+          }
+        } else if (msg.id === 'collide') {
+          listeners.forEach(cb => {
+            cb(msg.msg);
           });
+        } else {
+          // No point in logging this
+          // console.warn('[mirobot] Message received from previous session, skipping.');
         }
+      } catch (err) {
+        console.warn(err);
       }
-    };
+    }
   }
-  window.mirobot = mirobot;
-  window.mirobot.interface = mirobotAsync;
+
+  function onError (err) {
+    console.error(err);
+  }
+
+  function connect () {
+    if (socket) {
+      throw new Error('Already connected to a socket');
+    }
+    log('[mirobot] Connecting...');
+    const url = `ws://${ip}:8899/websocket`;
+    socket = new window.WebSocket(url);
+    socket.onopen = onConnect;
+    socket.onclose = onClose;
+    socket.onmessage = onMessage;
+    socket.onerror = onError;
+
+    processInterval = setInterval(send_queued, 1000 / 24);
+  }
+
+  async function send (command, arg, cb = noop) {
+    if (typeof arg === 'function') {
+      cb = arg;
+      arg = undefined;
+    }
+    return new Promise((resolve, reject) => {
+      const opt = { cmd: command };
+      if (arg != null) opt.arg = arg;
+      send_msg(opt, msg => {
+        resolve(msg);
+      });
+    }).then(resp => {
+      cb(resp);
+      return resp;
+    });
+  }
+
+  function send_msg (data, finish = noop, callback = noop) {
+    const id = randomHash();
+    data = { id, ...data }
+    if (data.arg != null) data.arg = data.arg.toString();
+    const message = JSON.stringify(data);
+    if (id in receivers) {
+      console.warn('Command already exists in queue', id);
+    }
+    receivers[id] = { callback, data, finish };
+    queue.push({ message, data });
+    send_queued();
+  }
+
+  function send_queued () {
+    if (idle && socket && queue.length > 0 && connected && socket.readyState === WebSocket.OPEN) {
+      idle = false;
+      const { message, data } = queue.shift();
+      log('[mirobot] Sending', data.cmd, `(${data.id})`);
+      socket.send(message);
+    }
+  }
 }

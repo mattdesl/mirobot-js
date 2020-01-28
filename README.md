@@ -48,7 +48,7 @@ Now you can use the apps as usual, but connect to the following IP within the ap
 local.mirobot.io
 ```
 
-# Approach C: Using Raw Websockets
+# Approach C: Using Websockets
 
 Let's say you want something really advanced, like connecting Face Tracking or some other cool JavaScript-based app to your Mirobot.
 
@@ -107,4 +107,36 @@ The `mirobot()` function also takes an ip address if you want to connect to some
 ```js
 const bot = mirobot('192.168.2.10');
 ...
+```
+
+### Advanced Example
+
+e.g. Hooking up with webcam or microphone you might want to use `bot.idle`, `bot.reset()`, and others.
+
+```js
+const bot = mirobot();
+
+// handle colliders
+bot.enableCollisionListener();
+bot.collision(state => {
+  console.log(state); // left, right or both
+  bot.beep(250); // beep on collision
+});
+
+// A 1-second event loop for the robot
+setInterval(() => {
+  bot.reset(); // clear command queue
+  bot.stop(); // stop movement
+  bot.forward(Math.random() * 250); // move randomly
+}, 1000);
+
+// A 24 frames per second loop for sensors
+// e.g. microphone or webcam input
+setInterval(() => {
+  if (bot.idle) { // if bot is idling
+    const sensorData = /* get sensor data */;
+    // move based on sensor data...
+    bot.left(sensorData);
+  }
+}, 1000 / 24);
 ```
