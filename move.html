@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <title>mirobot-test</title>
+</head>
+<body>
+  <script src="mirobot.js"></script>
+  <script>
+  const bot = mirobot();
+
+  // sends a 'stop' to the bot to kill any previous commands
+  bot.stop();
+
+  // draw a square
+  bot.send('pendown');
+  bot.send('forward', 50);
+  bot.send('left', 90);
+  bot.send('forward', 50);
+  bot.send('left', 90);
+  bot.send('forward', 50);
+  bot.send('left', 90);
+  bot.send('forward', 50);
+  bot.send('penup');
+
+  // beep for N milliseconds
+  bot.send('beep', 250);
+  </script>
+</body>
+</html>
