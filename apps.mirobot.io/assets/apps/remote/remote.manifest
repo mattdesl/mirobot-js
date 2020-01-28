@@ -1,0 +1,15 @@
+CACHE MANIFEST
+# 2020-01-28 14:02:47 +0000
+
+FALLBACK:
+/ /fallback.html
+
+NETWORK:
+*
+
+CACHE:
+/assets/main-f79244afadd5ea6eb5a690fff44ae4076744d26ea4f8cb4df2b183c683f78ace.js
+/assets/main-a107047bce487e14ed0d52e394115589ee6069cdfc47d7b5492b8b8bcbe9d96c.css
+/assets/logo_lg.png
+/assets/logo_sm.png
+/assets/apps/remote/main.css

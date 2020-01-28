@@ -1,0 +1,16 @@
+CACHE MANIFEST
+# 2020-01-28 14:02:47 +0000
+
+FALLBACK:
+/ /fallback.html
+
+NETWORK:
+*
+
+CACHE:
+/assets/main-f79244afadd5ea6eb5a690fff44ae4076744d26ea4f8cb4df2b183c683f78ace.js
+/assets/main-a107047bce487e14ed0d52e394115589ee6069cdfc47d7b5492b8b8bcbe9d96c.css
+/assets/logo_lg.png
+/assets/logo_sm.png
+/assets/mirobot-ui/app-3fe343a8d007539da1446b3424cae288fcf92936e8d0c5e08c0b7aaff87fccf8.js
+/assets/mirobot-ui/main-4936ae079e8e644c868bd00e1e28e742fd77a79623ac6b4f738635df0befd4b6.css

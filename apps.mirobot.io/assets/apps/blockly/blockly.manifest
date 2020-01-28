@@ -1,0 +1,27 @@
+CACHE MANIFEST
+# 2020-01-28 14:02:47 +0000
+
+FALLBACK:
+/ /fallback.html
+
+NETWORK:
+*
+
+CACHE:
+/assets/main-f79244afadd5ea6eb5a690fff44ae4076744d26ea4f8cb4df2b183c683f78ace.js
+/assets/main-a107047bce487e14ed0d52e394115589ee6069cdfc47d7b5492b8b8bcbe9d96c.css
+/assets/logo_lg.png
+/assets/logo_sm.png
+/assets/blockly/app-427f344d95b63a0932328ca2feac895f38cb760e5b3f2035de962aae98c93e2e.js
+/assets/editor-29fe02da9ee8890f39954f79b941edbec113db15531372974f27f32929bd8baf.css
+/assets/apps/blockly/msg/js/en.js
+/assets/apps/blockly/media/1x1.gif
+/assets/apps/blockly/media/icons.png
+/assets/apps/blockly/media/sprites.png
+/assets/apps/blockly/media/click.mp3
+/assets/apps/blockly/media/delete.mp3
+/assets/apps/blockly/media/disconnect.mp3
+/assets/apps/blockly/media/handclosed.cur
+/assets/apps/blockly/media/handdelete.cur
+/assets/apps/blockly/media/handopen.cur
+/assets/apps/blockly/media/sprites.png

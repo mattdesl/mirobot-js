@@ -1,0 +1,53 @@
+#turtle{
+  display:block;
+  width:100%;
+  position:relative;
+  border:1px solid #AAA;
+}
+
+#robot{
+  display:block;
+  position:absolute;
+}
+
+#robot polygon{
+  fill:#F00;
+}
+
+#robot.penup polygon{
+  fill:#FFF;
+}
+
+#penControl{
+  position:absolute;
+  bottom:3px;
+  right:3px;
+}
+
+#controls{
+  position:absolute;
+  right:3px;
+  top:3px;
+}
+#controls button{
+  margin-left:3px;
+}
+
+#turtle span{
+  position:absolute;
+  bottom:3px;
+  left:3px;
+  color:#CCC;
+}
+
+#js{
+  position:absolute;
+  right:3px;
+  top:30px;
+  background:rgba(255,255,255,0.7);
+  border:1px solid #AAA;
+  width:160px;
+  height:500px;
+  padding:5px;
+  font-size:80%;
+}
