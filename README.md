@@ -4,7 +4,19 @@ This uses WebSockets in the browser to connect to a mirobot on your local WiFi.
 
 First download this repository as a ZIP and extract it into a folder in your Documents or Desktop.
 
-# Approach A: Using apps.mirobot.io Locally
+## Approach A: Chrome App
+
+The simplest way to use mirobot locally is with the Chrome app:
+
+https://chrome.google.com/webstore/detail/mirobot/bjkfmkklaabeoomedlpgfplgndpiijea
+
+First turn the mirobot on and connect to its WiFi, then in the Mirobot apps connect to the following IP:
+
+`local.mirobot.io`
+
+## Approach B: Running apps.mirobot.io in the Browser
+
+If for some reason you don't want to use the Chrome App, you can still locally run the `apps.mirobot.io` site:
 
 First turn the mirobot on and connect to its WiFi.
 
@@ -36,7 +48,7 @@ Now you can use the apps as usual, but connect to the following IP within the ap
 local.mirobot.io
 ```
 
-# Approach B: Using Raw Websockets
+# Approach C: Using Raw Websockets
 
 Let's say you want something really advanced, like connecting Face Tracking or some other cool JavaScript-based app to your Mirobot.
 
