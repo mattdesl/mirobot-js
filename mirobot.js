@@ -103,18 +103,34 @@
         next();
       }
     }
-    
+
+    function send (...args) {
+      if (closing) return;
+      stack.push(args);
+      if (curBot) next();
+    }
+
     return {
-      send (...args) {
-        if (closing) return;
-        stack.push(args);
-        if (curBot) next();
-      },
+      // Familiar API as mirobot JS
+      forward (amount = 100) { send('forward', amount); },
+      back (amount = 100) { send('back', amount); },
+      left (degrees = 90) { send('left', degrees); },
+      right (degrees = 90) { send('right', degrees); },
+      penup () { send('penup'); },
+      pendown () { send('pendown'); },
+      beep (duration = 250) { send('beep', duration); },
+
+      // Raw send commands
+      send,
+
+      // Stop the bot immediately and kill command queue
       stop () {
         stack.length = 0;
         stack.push([ 'stop' ]);
         if (curBot) next();
       },
+
+      // Stop the bot and close connection
       close () {
         closing = true;
         stack.length = 0;
@@ -125,8 +141,8 @@
           });
         }
       }
-    }
+    };
   }
   window.mirobot = mirobot;
-  window.mirobot.async = mirobotAsync;
+  window.mirobot.interface = mirobotAsync;
 }

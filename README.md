@@ -17,22 +17,22 @@ Here's an example script that draws a rectangle:
 ```js
 const bot = mirobot();
 
-// sends a 'stop' to the bot to kill any commands
+// Send a 'stop' to kill any previously running commands
 bot.stop();
 
 // draw a square
-bot.send('pendown');
-bot.send('forward', 50);
-bot.send('left', 90);
-bot.send('forward', 50);
-bot.send('left', 90);
-bot.send('forward', 50);
-bot.send('left', 90);
-bot.send('forward', 50);
-bot.send('penup');
+bot.pendown();
+bot.forward(250);
+bot.left(90);
+bot.forward(250);
+bot.left(90);
+bot.forward(250);
+bot.left(90);
+bot.forward(250);
+bot.penup();
 
-// beep for N milliseconds
-bot.send('beep', 250);
+// beep for 250 milliseconds
+bot.beep(250);
 ```
 
 The code goes inside an HTML page, like this:
