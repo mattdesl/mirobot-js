@@ -48,7 +48,7 @@ Now you can use the apps as usual, but connect to the following IP within the ap
 local.mirobot.io
 ```
 
-# Approach C: Using Websockets
+## Approach C: Using Websockets
 
 Let's say you want something really advanced, like connecting Face Tracking or some other cool JavaScript-based app to your Mirobot.
 
