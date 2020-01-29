@@ -46,7 +46,8 @@ function mirobot (ip = 'local.mirobot.io') {
     collideState (cb) { return send('collideState', cb); },
     stop (cb) { return send('stop', cb); },
     forward (n = 100, cb) { return send('forward', n, cb); },
-    backward (n = 100, cb) { return send('backward', n, cb); },
+    back (n = 100, cb) { return send('back', n, cb); },
+    backward (n = 100, cb) { return send('back', n, cb); },
     left (deg = 90, cb) { return send('left', deg, cb); },
     right (deg = 90, cb) { return send('right', deg, cb); },
     penup (cb) { return send('penup', cb); },
@@ -62,11 +63,18 @@ function mirobot (ip = 'local.mirobot.io') {
     },
 
     reset () {
+      idle = true;
       queue.length = 0;
     },
 
     send,
     send_msg,
+    connect,
+
+    reconnect () {
+      this.close();
+      this.connect();
+    }
 
     close () {
       closing = true;
@@ -136,7 +144,7 @@ function mirobot (ip = 'local.mirobot.io') {
 
   function connect () {
     if (socket) {
-      throw new Error('Already connected to a socket');
+      console.warn('[mirobot] Already connected to a socket');
     }
     log('[mirobot] Connecting...');
     const url = `ws://${ip}:8899/websocket`;
