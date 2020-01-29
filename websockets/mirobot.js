@@ -74,7 +74,7 @@ function mirobot (ip = 'local.mirobot.io') {
     reconnect () {
       this.close();
       this.connect();
-    }
+    },
 
     close () {
       closing = true;
