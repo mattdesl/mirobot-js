@@ -147,6 +147,7 @@ function mirobot (ip = 'local.mirobot.io') {
       console.warn('[mirobot] Already connected to a socket');
     }
     log('[mirobot] Connecting...');
+    closing = false;
     const url = `ws://${ip}:8899/websocket`;
     socket = new window.WebSocket(url);
     socket.onopen = onConnect;
